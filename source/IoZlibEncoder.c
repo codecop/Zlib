@@ -6,11 +6,11 @@ For <a href=http://en.wikipedia.org/wiki/Zlib>Zlib</a> compression.
 Example use:
 <p>
 <pre>	
-z = ZlibEncoder clone
+z := ZlibEncoder clone
 z beginProcessing
 z inputBuffer appendSeq("this is a message")
 z process
-z endProcess
+z endProcessing
 result := z outputBuffer
 </pre>	
 */
@@ -115,12 +115,11 @@ IoObject *IoZlibEncoder_endProcessing(IoZlibEncoder *self, IoObject *locals, IoM
 	return self;
 }
 
-IoObject *IoZlibEncoder_process(IoZlibEncoder *self, IoObject *locals, IoMessage *m)
+IoObject *IoZlibEncoder_process(IoObject *self, IoObject *locals, IoMessage *m)
 {
 	/*doc ZlibEncoder process
 	Process the inputBuffer and appends the result to the outputBuffer.
-	The processed inputBuffer is empties except for the spare bytes at 
-	the end which don't fit into a cipher block.
+	The processed inputBuffer is emptied except for the spare bytes at the end which don't fit into a cipher block.
 	*/
 	
 	z_stream *strm = DATA(self)->strm;
@@ -148,6 +147,7 @@ IoObject *IoZlibEncoder_process(IoZlibEncoder *self, IoObject *locals, IoMessage
 		strm->avail_out = outputRoom;
 
 		ret = deflate(strm, Z_NO_FLUSH);
+
 		//assert(ret != Z_STREAM_ERROR);
 		{
 		size_t outputSize = outputRoom - strm->avail_out;

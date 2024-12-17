@@ -3,14 +3,14 @@
 //metadoc ZlibDecoder category API
 /*metadoc ZlibDecoder description
 For <a href=http://en.wikipedia.org/wiki/Zlib>Zlib</a> uncompression.
-Example use;
+Example use:
 <pre>	
-z = ZlibDecoder clone
+z := ZlibDecoder clone
 z beginProcessing
 z inputBuffer appendSeq(inputData)
 z process
-z endProcess
-result := z outputBuffer 
+z endProcessing
+result := z outputBuffer
 </pre>	
 */
 
@@ -116,12 +116,11 @@ IoObject *IoZlibDecoder_endProcessing(IoZlibDecoder *self, IoObject *locals, IoM
 	return self;
 }
 
-
 IoObject *IoZlibDecoder_process(IoObject *self, IoObject *locals, IoMessage *m)
 {
 	/*doc ZlibDecoder process
 	Process the inputBuffer and appends the result to the outputBuffer.
-	The processed inputBuffer is empties except for the spare bytes at the end which don't fit into a cipher block.
+	The processed inputBuffer is emptied except for the spare bytes at the end which don't fit into a cipher block.
 	*/
 	
 	z_stream *strm = DATA(self)->strm;
@@ -138,7 +137,7 @@ IoObject *IoZlibDecoder_process(IoObject *self, IoObject *locals, IoMessage *m)
 	{
 		int ret;
 		size_t oldOutputSize = UArray_size(output);
-		size_t outputRoom    = (inputSize * 10);
+		size_t outputRoom = (inputSize * 10);
 		uint8_t *outputBytes;
 
 		UArray_setSize_(output, oldOutputSize + outputRoom);
