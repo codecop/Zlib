@@ -1,3 +1,13 @@
+ZlibEncoder do(
+	inputBuffer ::= nil
+	outputBuffer ::= nil
+
+	init := method(
+	    setInputBuffer(Sequence clone)
+	    setOutputBuffer(Sequence clone)
+	)
+)
+
 ZlibDecoder do(
 	inputBuffer ::= nil
 	outputBuffer ::= nil
@@ -33,7 +43,6 @@ compressedData := Zlib compress(uncompressedData)
 uncompressedData := Zlib uncompress(compressedData)
 </pre>	
 */
-	ZlibDecoder := ZlibDecoder
 	
 	compress := method(s,
 		//doc Zlib compress(aSeq) Returns a compressed version of aSeq.
