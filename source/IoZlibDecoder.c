@@ -108,9 +108,11 @@ IoObject *IoZlibDecoder_endProcessing(IoZlibDecoder *self, IoObject *locals, IoM
 	*/
 	
 	z_stream *strm = DATA(self)->strm;
+	int ret;
 
 	IoZlibDecoder_process(self, locals, m);
-	inflateEnd(strm);
+	ret = inflateEnd(strm);
+	IOASSERT(ret == Z_OK, "unable to finish zlib via inflateEnd()");
 
 	DATA(self)->isDone = 1;
 	return self;
@@ -151,7 +153,7 @@ IoObject *IoZlibDecoder_process(IoObject *self, IoObject *locals, IoMessage *m)
 
 		errno = 0;
 
-		ret = inflate(strm, Z_NO_FLUSH);
+		ret = inflate(strm, Z_FINISH); // uncompress in one go
 
 		//printf("inputSize  = %i\n", (int)inputSize);
 		//printf("outputRoom = %i\n", (int)outputRoom);
