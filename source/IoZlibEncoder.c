@@ -94,8 +94,9 @@ IoObject *IoZlibEncoder_beginProcessing(IoZlibEncoder *self, IoObject *locals, I
 	strm->opaque = Z_NULL;
 	strm->avail_in = 0;
 	strm->next_in = Z_NULL;
-	ret = deflateInit(strm, DATA(self)->level);
-	IOASSERT(ret == Z_OK, "unable to initialize zlib via inflateInit()");
+	//ret = deflateInit(strm, DATA(self)->level); // zlib format
+	ret = deflateInit2(strm, DATA(self)->level, Z_DEFLATED, 16 + 15, 8, Z_DEFAULT_STRATEGY); // gz format
+	IOASSERT(ret == Z_OK, "unable to initialize zlib via deflateInit()");
 
 	return self;
 }
@@ -107,9 +108,11 @@ IoObject *IoZlibEncoder_endProcessing(IoZlibEncoder *self, IoObject *locals, IoM
 	*/
 	
 	z_stream *strm = DATA(self)->strm;
+	int ret;
 
 	IoZlibEncoder_process(self, locals, m);
-	deflateEnd(strm);
+	ret = deflateEnd(strm);
+	IOASSERT(ret == Z_OK, "unable to finish zlib via deflateEnd()");
 
 	DATA(self)->isDone = 1;
 	return self;
@@ -146,9 +149,13 @@ IoObject *IoZlibEncoder_process(IoObject *self, IoObject *locals, IoMessage *m)
 		strm->next_out  = outputBytes;
 		strm->avail_out = outputRoom;
 
-		ret = deflate(strm, Z_NO_FLUSH);
+		ret = deflate(strm, Z_FINISH); // compress in one go
 
 		//assert(ret != Z_STREAM_ERROR);
+		//assert(ret == Z_OK); // progress has been made (more input processed or more output produced)
+		IOASSERT(ret == Z_STREAM_END, "unable to process zlib via deflate()");
+		//assert(strm->avail_in == 0); // if > 0, must be called again after making room in the output buffer
+		//assert(strm->avail_out > 0); // if == 0, must be called again with the same value of the flush parameter and more output space
 		{
 		size_t outputSize = outputRoom - strm->avail_out;
 		UArray_setSize_(output, oldOutputSize + outputSize);
